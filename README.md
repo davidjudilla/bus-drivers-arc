@@ -16,7 +16,7 @@ Also, Each of the tools support have documentation built into the xml metadata w
   * **Create Random Points on a Network Dataset**
   * **Global K Functoin**
   * **Cross K Function**
-  * **Netowrk Dataset Length**
+  * **Network Dataset Length**
   * **Random ODCM Permutations**
 
 ## Required Environment
