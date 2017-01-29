@@ -17,19 +17,20 @@ Also, Each of the tools support have documentation built into the xml metadata w
     * **Usage**
 	  * An existing feature dataset must exist in order to use the CrashRadiusDensity tool.
 	  * The tool can then be run by inputing a feature dataset as well as the radius for each of the crash points. 
-    
   ##### **Crash Network Density**
     * **Summary**
     	* The CrashNetworkDensity tool creates a network using an existing dataset of crashes (as coordinates) as well as the Open 			Street 	Map Network (view Syntax).
     * **Usage**
 	  * An existing Feature Dataset must exist to use this tool.
 	  * Once a feature dataset exists, the CrashNetworkDensity tool can be used on this dataset to create a network with the Open 			Street Map Network. 
+  
   ##### **Create Random Points on a Network Dataset**
     * **Summary**
     	* Creates a specified number of points randomly on a network dataset as a feature class.
     * **Usage**
 	  * See parameters for Required and Optional Fields.
 	  * Outputs a series of random points on a network dataset. 
+  
   ##### **Global K Function**
     * **Summary**
     	* The Global K Function tool allows the user to find crash clustering and dispersion at different distance bands.
@@ -37,13 +38,15 @@ Also, Each of the tools support have documentation built into the xml metadata w
     * **Usage**
 	  * See parameters for description for Required and Optional inputs.
 	  * Outputs a table of raw data which is used to generate the Network K Function.
-  ##### **Cross K Fuanction**
+  
+  ##### **Cross K Function**
     * **Summary**
     	* The Cross K Function tool that allows the user to find crash clustering and dispersion at different distance bands using 			Dr. Ghazan Khan’s modified version of the Ripley’s K Function. For a given set of crash points, this function determines 			deviations from spatial homogeneity at different distances along a road network.
  		* Cross-K analysis, is comprised of local statistics at individual crash locations to identify individual crashes as part of 		a statistically significant clustered (hotspot), dispersed (coldspot), or random point pattern. The methods under the crash 		cluster analysis category were developed based on the principles of the K-Function method in network space.
 	* **Usage**
 	  * See parameters for description for Required and Optional inputs.
  	  * Outputs a table and a database of raw data which is used to generate the Network K Function.
+  
   ##### **Random ODCM Permutations**
     * **Summary**
     	* Generates OD Cost Matrices with oberved data and a complementrary set of random point permutations.
