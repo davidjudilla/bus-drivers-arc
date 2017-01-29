@@ -11,12 +11,14 @@ Also, Each of the tools support have documentation built into the xml metadata w
 
 ## Features
 * The Crash Analysis toolbox has 7 major tools in the "toolbox" folder (refer to the User Manual or consult with Dr. Khan for details on each tool as they have background information of each tool as well as expected output):
+
   ####  **Crash Radius Density**
     * **Summary**
     	* Creates a bounding circle with a user defined radius around crashes (as coordinates), allowing a user to view how many 			crashes cluster within the user defined radius of a given crash point.
     * **Usage**
 	  * An existing feature dataset must exist in order to use the CrashRadiusDensity tool.
 	  * The tool can then be run by inputing a feature dataset as well as the radius for each of the crash points. 
+	  
   #### **Crash Network Density**
     * **Summary**
     	* The CrashNetworkDensity tool creates a network using an existing dataset of crashes (as coordinates) as well as the Open 			Street 	Map Network (view Syntax).
