@@ -9,6 +9,8 @@ import network_dataset_random_points
 import random_odcm_permutations
 import global_k_function
 import cross_k_function
+import variable_distance_k_function
+import local_k_function
 
 # Live reload each module at runtime (otherwise ArcMap has to be closed and
 # reopened rather than just refreshing the toolbox).
@@ -19,6 +21,8 @@ network_dataset_random_points = reload(network_dataset_random_points)
 random_odcm_permutations      = reload(random_odcm_permutations)
 global_k_function             = reload(global_k_function)
 cross_k_function              = reload(cross_k_function)
+variable_distance_k_function  = reload(variable_distance_k_function)
+local_k_function              = reload(local_k_function)
 
 from crash_radius_density          import CrashRadiusDensity
 from crash_network_density         import CrashNetworkDensity
@@ -27,6 +31,9 @@ from network_dataset_random_points import NetworkDatasetRandomPoints
 from random_odcm_permutations      import RandomODCMPermutations
 from global_k_function             import GlobalKFunction
 from cross_k_function              import CrossKFunction
+from variable_distance_k_function  import VariableDistanceKFunction
+from local_k_function              import LocalKFunction
+
 
 class Toolbox(object):
   def __init__(self):
@@ -44,5 +51,7 @@ class Toolbox(object):
       NetworkDatasetRandomPoints,
       RandomODCMPermutations,
       GlobalKFunction,
-      CrossKFunction
+      CrossKFunction,
+      VariableDistanceKFunction,
+      LocalKFunction
     ]

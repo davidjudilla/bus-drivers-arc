@@ -114,6 +114,7 @@ class CrashNetworkDensity(object):
   # Check if the tool is available for use.
   ###
   def isLicensed(self):
+    return True
     # Network Analyst tools must be available.
     if arcpy.CheckExtension("Network") != "Available":
       return False
