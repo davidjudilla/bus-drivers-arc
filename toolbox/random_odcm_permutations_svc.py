@@ -57,7 +57,7 @@ class RandomODCMPermutationsSvc:
     # Make the observed ODCM and calculate the distance between each set of
     # points.  If a cross analysis is selected, find the distance between the
     # source and destination points.  Otherwise there is only one set of points
-    odDists = self._calculateDistances(networkDataset, srcPoints, destPoints, snapDist, cutoff)
+    odDists = self._calculateDistances(networkDataset, srcPoints, destPoints, snapDist, cutoff, messages)
     self._writeODCMData(odDists, outLoc, outFC, 0)
     callback(odDists, 0)
     messages.addMessage("Iteration 0 (observed) complete.")
@@ -96,7 +96,7 @@ class RandomODCMPermutationsSvc:
   #        snapped to the nearset line if it is within this threshold.
   # @param cutoff The cutoff distance for the ODCM (optional).
   ###
-  def _calculateDistances(self, networkDataset, srcPoints, destPoints, snapDist, cutoff):
+  def _calculateDistances(self, networkDataset, srcPoints, destPoints, snapDist, cutoff, messages):
     # This is the current map, which should be an OSM base map.
     curMapDoc = arcpy.mapping.MapDocument("CURRENT")
 
@@ -112,6 +112,9 @@ class RandomODCMPermutationsSvc:
     odcmSublayers   = arcpy.na.GetNAClassNames(odcmLayer)
     odcmOriginLayer = odcmSublayers["Origins"]
     odcmDestLayer   = odcmSublayers["Destinations"]
+    originDescription = arcpy.Describe(odcmOriginLayer)
+    messages.addMessage("originDesc {0}".format(originDescription.children));
+    messages.addMessage("origin field_names {0}".format([f.name for f in arcpy.ListFields(srcPoints)]))
 
     # Add the origins and destinations to the ODCM.
     arcpy.na.AddLocations(odcmLayer, odcmOriginLayer, srcPoints,  "", snapDist)
