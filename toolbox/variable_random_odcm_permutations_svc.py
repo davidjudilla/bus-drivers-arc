@@ -12,7 +12,7 @@ k_function_timer  = reload(k_function_timer)
 from k_function_helper import KFunctionHelper
 from k_function_timer  import KFunctionTimer
 
-class RandomODCMPermutationsSvc:
+class VariableRandomODCMPermutationsSvc:
   ###
   # Initialize the service (stateless).
   ###
@@ -144,15 +144,13 @@ class RandomODCMPermutationsSvc:
     else:
       where = ""
 
-    count = 0
     with arcpy.da.SearchCursor(
       in_table=odcmLines,
       field_names=["Total_Length", "originID", "destinationID"],
       where_clause=where) as cursor:
 
       for row in cursor:
-        odDists.append({"Total_Length": row[0], "OriginID": row[1], "DestinationID": row[2]})
-        count+= 1
+        odDists.append({"Total_Length": row[0]/srcRows[row[1]-1].getValue("LENGTH"), "OriginID": row[1], "DestinationID": row[2]})
 
     return odDists
   

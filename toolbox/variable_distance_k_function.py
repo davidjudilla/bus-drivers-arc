@@ -2,7 +2,7 @@ import arcpy
 import os
 import cross_k_calculation
 import k_function_helper
-import random_odcm_permutations_svc
+import variable_random_odcm_permutations_svc
 import global_k_function_svc
 
 from arcpy import env
@@ -10,12 +10,12 @@ from arcpy import env
 # ArcMap caching prevention.
 cross_k_calculation          = reload(cross_k_calculation)
 k_function_helper            = reload(k_function_helper)
-random_odcm_permutations_svc = reload(random_odcm_permutations_svc)
+variable_random_odcm_permutations_svc = reload(variable_random_odcm_permutations_svc)
 global_k_function_svc        = reload(global_k_function_svc)
 
 from cross_k_calculation          import CrossKCalculation
 from k_function_helper            import KFunctionHelper
-from random_odcm_permutations_svc import RandomODCMPermutationsSvc
+from variable_random_odcm_permutations_svc import VariableRandomODCMPermutationsSvc
 from global_k_function_svc        import GlobalKFunctionSvc
 
 class VariableDistanceKFunction(object):
@@ -273,8 +273,8 @@ class VariableDistanceKFunction(object):
 
     # Generate the ODCM permutations, including the ODCM for the observed data.
     # doNetKCalc is called on each iteration.
-    randODCMPermSvc = RandomODCMPermutationsSvc()
-    randODCMPermSvc.generateODCMPermutations("Cross Analysis",
+    varRandODCMPermSvc = VariableRandomODCMPermutationsSvc()
+    varRandODCMPermSvc.generateODCMPermutations("Cross Analysis",
       srcPoints, destPoints, networkDataset, snapDist, cutoff, outNetKLoc,
       outRawODCMFCName, numPerms, outCoordSys, numPointsFieldName, messages, doNetKCalc)
 
