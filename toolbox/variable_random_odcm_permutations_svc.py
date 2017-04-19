@@ -39,7 +39,7 @@ class VariableRandomODCMPermutationsSvc:
   ###
   def generateODCMPermutations(self, analysisType, srcPoints, destPoints,
     networkDataset, snapDist, cutoff, outLoc, outFC, numPerms, outCoordSys,
-    numPointsFieldName, messages, callback = None):
+    numPointsFieldName, lengthFieldName, messages, callback = None):
     # Default no-op for the callback.
     if callback is None:
       callback = lambda odDists, iteration: None
@@ -57,7 +57,7 @@ class VariableRandomODCMPermutationsSvc:
     # Make the observed ODCM and calculate the distance between each set of
     # points.  If a cross analysis is selected, find the distance between the
     # source and destination points.  Otherwise there is only one set of points
-    odDists = self._calculateDistances(networkDataset, srcPoints, destPoints, snapDist, cutoff, messages)
+    odDists = self._calculateDistances(networkDataset, srcPoints, destPoints, snapDist, cutoff, lengthFieldName, messages)
     self._writeODCMData(odDists, outLoc, outFC, 0)
     callback(odDists, 0)
     messages.addMessage("Iteration 0 (observed) complete.")
@@ -73,9 +73,9 @@ class VariableRandomODCMPermutationsSvc:
       # See the note above: Either find the distance from the source points to the random points,
       # or the distance between the random points.
       if analysisType == "CROSS":
-        odDists = self._calculateDistances(networkDataset, srcPoints, randPoints, snapDist, cutoff)
+        odDists = self._calculateDistances(networkDataset, srcPoints, randPoints, snapDist, cutoff, lengthFieldName)
       else:
-        odDists = self._calculateDistances(networkDataset, randPoints, randPoints, snapDist, cutoff)
+        odDists = self._calculateDistances(networkDataset, randPoints, randPoints, snapDist, cutoff, lengthFieldName)
       self._writeODCMData(odDists, outLoc, outFC, i)
       callback(odDists, i)
 
@@ -96,7 +96,7 @@ class VariableRandomODCMPermutationsSvc:
   #        snapped to the nearset line if it is within this threshold.
   # @param cutoff The cutoff distance for the ODCM (optional).
   ###
-  def _calculateDistances(self, networkDataset, srcPoints, destPoints, snapDist, cutoff, messages):
+  def _calculateDistances(self, networkDataset, srcPoints, destPoints, snapDist, cutoff, lengthFieldName, messages):
     # This is the current map, which should be an OSM base map.
     curMapDoc = arcpy.mapping.MapDocument("CURRENT")
 
@@ -116,7 +116,7 @@ class VariableRandomODCMPermutationsSvc:
     srcRows = [row for row in arcpy.SearchCursor(srcPoints)]
     messages.addMessage("originDesc {0}".format(originDescription.children));
     messages.addMessage("origin field_names {0}".format([f.name for f in arcpy.ListFields(srcPoints)]))
-    messages.addMessage("row 1: {0}".format(srcRows[0].getValue("LENGTH")))
+    messages.addMessage("row 1: {0}".format(srcRows[0].getValue(lengthFieldName)))
 
     # Add the origins and destinations to the ODCM.
     arcpy.na.AddLocations(odcmLayer, odcmOriginLayer, srcPoints,  "", snapDist)
@@ -150,7 +150,7 @@ class VariableRandomODCMPermutationsSvc:
       where_clause=where) as cursor:
 
       for row in cursor:
-        odDists.append({"Total_Length": row[0]/srcRows[row[1]-1].getValue("LENGTH"), "OriginID": row[1], "DestinationID": row[2]})
+        odDists.append({"Total_Length": row[0]/srcRows[row[1]-1].getValue(lengthFieldName), "OriginID": row[1], "DestinationID": row[2]})
 
     return odDists
   
