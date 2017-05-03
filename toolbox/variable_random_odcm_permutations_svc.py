@@ -113,10 +113,10 @@ class VariableRandomODCMPermutationsSvc:
     odcmOriginLayer = odcmSublayers["Origins"]
     odcmDestLayer   = odcmSublayers["Destinations"]
     originDescription = arcpy.Describe(odcmOriginLayer)
-    srcRows = [row for row in arcpy.SearchCursor(srcPoints)]
-    messages.addMessage("originDesc {0}".format(originDescription.children));
-    messages.addMessage("origin field_names {0}".format([f.name for f in arcpy.ListFields(srcPoints)]))
-    messages.addMessage("row 1: {0}".format(srcRows[0].getValue(lengthFieldName)))
+    srcRows = [row.getValue(lengthFieldName) for row in arcpy.SearchCursor(srcPoints)]
+
+    messages.addMessage("length field name: {0}".format(lengthFieldName))
+    messages.addMessage("row 1: {0}".format(srcRows[0]))
 
     # Add the origins and destinations to the ODCM.
     arcpy.na.AddLocations(odcmLayer, odcmOriginLayer, srcPoints,  "", snapDist)
@@ -150,7 +150,7 @@ class VariableRandomODCMPermutationsSvc:
       where_clause=where) as cursor:
 
       for row in cursor:
-        odDists.append({"Total_Length": row[0]/srcRows[row[1]-1].getValue(lengthFieldName), "OriginID": row[1], "DestinationID": row[2]})
+        odDists.append({"Total_Length": row[0]/srcRows[row[1]-1], "OriginID": row[1], "DestinationID": row[2]})
 
     return odDists
   
