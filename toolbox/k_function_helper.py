@@ -141,3 +141,13 @@ class KFunctionHelper(object):
         fieldsNames.append(field.name)
 
     return fieldsNames
+
+  def getShapeFileFieldNames(self, shapeFile):
+    fields = arcpy.ListFields(shapeFile)
+
+    fieldNames = []
+    for field in fields: 
+      if field.type == "Integer" or field.type == "SmallInteger" or field.type == "Double" or field.type == "Single":
+        fieldNames.append(field.name)
+
+    return fieldNames

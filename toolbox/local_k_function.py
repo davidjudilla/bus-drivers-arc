@@ -263,7 +263,7 @@ class LocalKFunction(object):
 
     # Generate the ODCM permutations, including the ODCM for the observed data.
     # doNetKCalc is called on each iteration.
-    randODCMPermSvc = RandomODCMPermutationsSvc()
+    randODCMPermSvc = RandomODCMPermutationsSvc(messages)
     randODCMPermSvc.generateODCMPermutations("Global Analysis",
       points, points, networkDataset, snapDist, cutoff, outNetKLoc,
       outRawODCMFCName, numPerms, outCoordSys, numPointsFieldName, messages, doNetKCalc)
