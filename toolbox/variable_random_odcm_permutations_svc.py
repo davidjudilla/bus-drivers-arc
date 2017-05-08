@@ -115,8 +115,7 @@ class VariableRandomODCMPermutationsSvc:
     originDescription = arcpy.Describe(odcmOriginLayer)
     srcRows = [row.getValue(lengthFieldName) for row in arcpy.SearchCursor(srcPoints)]
 
-    messages.addMessage("length field name: {0}".format(lengthFieldName))
-    messages.addMessage("row 1: {0}".format(srcRows[0]))
+    messages.addMessage("Curve length field name: {0}".format(lengthFieldName))
 
     # Add the origins and destinations to the ODCM.
     arcpy.na.AddLocations(odcmLayer, odcmOriginLayer, srcPoints,  "", snapDist)
@@ -150,8 +149,9 @@ class VariableRandomODCMPermutationsSvc:
       where_clause=where) as cursor:
 
       for row in cursor:
-        odDists.append({"Total_Length": row[0]/srcRows[row[1]-1], "OriginID": row[1], "DestinationID": row[2]})
+        odDists.append({"Total_Length": row[0], "OriginID": row[1], "DestinationID": row[2], "Curve_Length": srcRows[row[1]-1], "Ratio": row[0]/srcRows[row[1]-1]})
 
+    messages.addMessage(odDists)
     return odDists
   
   ###
@@ -172,8 +172,10 @@ class VariableRandomODCMPermutationsSvc:
       arcpy.AddField_management(outFCFullPath, "OriginID",         "LONG")
       arcpy.AddField_management(outFCFullPath, "DestinationID",    "LONG")
       arcpy.AddField_management(outFCFullPath, "Total_Length",     "DOUBLE")
+      arcpy.AddField_management(outFCFullPath, "Curve_Length",     "DOUBLE")
+      arcpy.AddField_management(outFCFullPath, "Ratio",            "DOUBLE")
 
     with arcpy.da.InsertCursor(outFCFullPath,
-      ["Iteration_Number", "OriginID", "DestinationID", "Total_Length"]) as cursor:
+      ["Iteration_Number", "OriginID", "DestinationID", "Total_Length", "Curve_Length", "Ratio"]) as cursor:
       for odDist in odDists:
-        cursor.insertRow([iteration, odDist["OriginID"], odDist["DestinationID"], odDist["Total_Length"]])
+        cursor.insertRow([iteration, odDist["OriginID"], odDist["DestinationID"], odDist["Total_Length"], odDist["Curve_Length"], odDist["Ratio"]])

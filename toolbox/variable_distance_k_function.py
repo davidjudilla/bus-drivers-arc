@@ -78,12 +78,21 @@ class VariableDistanceKFunction(object):
 
     # Distance increment.
     distInc = arcpy.Parameter(
-      displayName="Input Distance Increment (0-3)",
+      displayName="Input Distance Increment",
       name="distance_increment",
       datatype="Double",
       parameterType="Required",
       direction="Input")
     distInc.value = 1000
+
+    # Beginning distance.
+    analysisBegDist = arcpy.Parameter(
+      displayName="Analysis Beginning Distance",
+      name="analysis_beg_dist",
+      datatype="Double",
+      parameterType="Required",
+      direction="Input")
+    analysisBegDist.value = 0
 
     # Beginning distance.
     analysisInc = arcpy.Parameter(
@@ -94,9 +103,9 @@ class VariableDistanceKFunction(object):
       direction="Input")
     analysisInc.value = 0.25
 
-    # Distance increment.
+    # Analysis Max Ratio
     analysisMaxRatio = arcpy.Parameter(
-      displayName="Analysis Max Ratio",
+      displayName="Analysis Max Distance/Curve_Length Ratio  (0-3)",
       name="analysis_max_ratio",
       datatype="Double",
       parameterType="Required",
@@ -176,16 +185,16 @@ class VariableDistanceKFunction(object):
       direction="Input")
 
     # Length field name used to create variable distance ratio.
-    varDistLengthFieldName = arcpy.Parameter(
-      displayName="Variable Distance Length Field Name",
+    curveLengthFieldName = arcpy.Parameter(
+      displayName="Curve Length Field Name",
       name = "length_field_name",
       datatype="GPString",
       parameterType="Required",
       direction="Input")
    
-    return [srcPoints, destPoints, networkDataset, numBands, begDist, distInc, analysisInc, analysisMaxRatio,
+    return [srcPoints, destPoints, networkDataset, numBands, begDist, distInc, analysisBegDist, analysisInc, analysisMaxRatio,
       snapDist, outNetKLoc, outRawODCMFCName, outRawFCName, outAnlFCName,
-      numPerms, outCoordSys, numPointsFieldName, varDistLengthFieldName]
+      numPerms, outCoordSys, numPointsFieldName, curveLengthFieldName]
 
   ###
   # Check if the tool is available for use.
@@ -199,7 +208,7 @@ class VariableDistanceKFunction(object):
   ###
   def updateParameters(self, parameters):
     networkDataset = parameters[2].value
-    outCoordSys    = parameters[14].value
+    outCoordSys    = parameters[15].value
     srcPoints      = parameters[0].value
 
     # Default the coordinate system.
@@ -210,29 +219,29 @@ class VariableDistanceKFunction(object):
       if (ndDesc.spatialReference.projectionName != "" and
         ndDesc.spatialReference.linearUnitName == "Meter" and
         ndDesc.spatialReference.factoryCode != 0):
-        parameters[14].value = ndDesc.spatialReference.factoryCode
+        parameters[15].value = ndDesc.spatialReference.factoryCode
 
     # Set the source of the fields (the network dataset).
     if networkDataset is not None:
-      parameters[15].filter.list = self.kfHelper.getEdgeSourceFieldNames(networkDataset)
+      parameters[16].filter.list = self.kfHelper.getEdgeSourceFieldNames(networkDataset)
 
     # Set length property for variable distance ratio
     if srcPoints is not None:
-      parameters[16].filter.list = self.kfHelper.getShapeFileFieldNames(srcPoints)
+      parameters[17].filter.list = self.kfHelper.getShapeFileFieldNames(srcPoints)
 
   ###
   # If any fields are invalid, show an appropriate error message.
   ###
   def updateMessages(self, parameters):
-    outCoordSys = parameters[14].value
+    outCoordSys = parameters[15].value
 
     if outCoordSys is not None:
       if outCoordSys.projectionName == "":
-        parameters[14].setErrorMessage("Output coordinate system must be a projected coordinate system.")
+        parameters[15].setErrorMessage("Output coordinate system must be a projected coordinate system.")
       elif outCoordSys.linearUnitName != "Meter":
-        parameters[14].setErrorMessage("Output coordinate system must have a linear unit code of 'Meter.'")
+        parameters[15].setErrorMessage("Output coordinate system must have a linear unit code of 'Meter.'")
       else:
-        parameters[14].clearMessage()
+        parameters[15].clearMessage()
 
   ###
   # Execute the tool.
@@ -244,19 +253,20 @@ class VariableDistanceKFunction(object):
     numBands           = parameters[3].value
     begDist            = parameters[4].value
     distInc            = parameters[5].value
-    analysisInc        = parameters[6].value
-    analysisMaxRatio   = parameters[7].value
-    snapDist           = parameters[8].value
-    outNetKLoc         = parameters[9].valueAsText
-    outRawODCMFCName   = parameters[10].valueAsText
-    outRawFCName       = parameters[11].valueAsText
-    outAnlFCName       = parameters[12].valueAsText
-    numPerms           = self.kfHelper.getPermutationSelection()[parameters[13].valueAsText]
-    outCoordSys        = parameters[14].value
-    numPointsFieldName = parameters[15].value
+    analysisBegDist    = parameters[6].value
+    analysisInc        = parameters[7].value
+    analysisMaxRatio   = parameters[8].value
+    snapDist           = parameters[9].value
+    outNetKLoc         = parameters[10].valueAsText
+    outRawODCMFCName   = parameters[11].valueAsText
+    outRawFCName       = parameters[12].valueAsText
+    outAnlFCName       = parameters[13].valueAsText
+    numPerms           = self.kfHelper.getPermutationSelection()[parameters[14].valueAsText]
+    outCoordSys        = parameters[15].value
+    numPointsFieldName = parameters[16].value
     ndDesc             = arcpy.Describe(networkDataset)
     gkfSvc             = GlobalKFunctionSvc()
-    lengthFieldName    = parameters[16].value
+    lengthFieldName    = parameters[17].value
 
     # Refer to the note in the NetworkDatasetLength tool.
     if outCoordSys is None:
@@ -292,13 +302,13 @@ class VariableDistanceKFunction(object):
 
     # Use a mutable container for the number of bands so that the below callback
     # can write to it.  The "nonlocal" keyword not available in Python 2.x.
-    analysisNumBands = int(analysisMaxRatio/analysisInc) + 1
+    analysisNumBands = int((analysisMaxRatio-analysisBegDist)/analysisInc) + 1
     numBandsCont = [analysisNumBands]
 
     # Callback function that does the Network K calculation on an OD cost matrix.    
     def doNetKCalc(odDists, iteration):
       # Do the actual network k-function calculation.
-      netKCalc = VariableDistanceKCalculation(networkLength, numDests, odDists, begDist, analysisInc, numBandsCont[0])
+      netKCalc = VariableDistanceKCalculation(networkLength, numDests, odDists, analysisBegDist, analysisInc, numBandsCont[0])
       netKCalculations.append(netKCalc.getDistanceBands())
 
       # If the user did not specifiy a number of distance bands explicitly,
