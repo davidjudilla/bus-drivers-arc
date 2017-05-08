@@ -1,6 +1,6 @@
 import arcpy
 import os
-import network_k_calculation
+import local_k_calculation
 import k_function_helper
 import random_odcm_permutations_svc
 import global_k_function_svc
@@ -8,12 +8,12 @@ import global_k_function_svc
 from arcpy import env
 
 # ArcMap caching prevention.
-network_k_calculation        = reload(network_k_calculation)
+local_k_calculation          = reload(local_k_calculation)
 k_function_helper            = reload(k_function_helper)
 random_odcm_permutations_svc = reload(random_odcm_permutations_svc)
 global_k_function_svc        = reload(global_k_function_svc)
 
-from network_k_calculation        import NetworkKCalculation
+from local_k_calculation        import LocalKCalculation
 from k_function_helper            import KFunctionHelper
 from random_odcm_permutations_svc import RandomODCMPermutationsSvc
 from global_k_function_svc        import GlobalKFunctionSvc
@@ -24,7 +24,7 @@ class LocalKFunction(object):
   ###
   def __init__(self):
     self.label              = "Local K Function"
-    self.description        = "Uses a Local Network K Function to analyze clustering and dispersion trends in a set of crash points."
+    self.description        = "Uses a Local K Function to analyze clustering and dispersion trends in a set of crash points."
     self.canRunInBackground = False
     env.overwriteOutput     = True
     self.kfHelper           = KFunctionHelper()
@@ -233,6 +233,10 @@ class LocalKFunction(object):
     messages.addMessage("Network dataset length projected coordinate system: {0}".format(outCoordSys.name))
     messages.addMessage("Number of Points Field Name: {0}\n".format(numPointsFieldName))
 
+    # Get number of origin points so we can pass it into Local K Calculation
+    numOrigins = len([row for row in arcpy.SearchCursor(points)])
+    messages.addMessage("Number of origin points: {0}".format(numOrigins))
+
     # Calculate the length of the network.
     networkLength = self.kfHelper.calculateLength(networkDataset, outCoordSys)
     messages.addMessage("Total network length: {0}".format(networkLength))
@@ -250,10 +254,10 @@ class LocalKFunction(object):
     # can write to it.  The "nonlocal" keyword not available in Python 2.x.
     numBandsCont = [numBands]
 
-    # Callback function that does the Network K calculation on an OD cost matrix.    
+    # Callback function that does the Local K calculation on an OD cost matrix.    
     def doNetKCalc(odDists, iteration):
-      # Do the actual network k-function calculation.
-      netKCalc = NetworkKCalculation(networkLength, numPoints, odDists, begDist, distInc, numBandsCont[0])
+      # Do the actual local k-function calculation.
+      netKCalc = LocalKCalculation(networkLength, numPoints, odDists, begDist, distInc, numBandsCont[0], numOrigins)
       netKCalculations.append(netKCalc.getDistanceBands())
 
       # If the user did not specifiy a number of distance bands explicitly,
@@ -263,7 +267,7 @@ class LocalKFunction(object):
 
     # Generate the ODCM permutations, including the ODCM for the observed data.
     # doNetKCalc is called on each iteration.
-    randODCMPermSvc = RandomODCMPermutationsSvc(messages)
+    randODCMPermSvc = RandomODCMPermutationsSvc()
     randODCMPermSvc.generateODCMPermutations("Global Analysis",
       points, points, networkDataset, snapDist, cutoff, outNetKLoc,
       outRawODCMFCName, numPerms, outCoordSys, numPointsFieldName, messages, doNetKCalc)
