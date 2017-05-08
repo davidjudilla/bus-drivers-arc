@@ -3,7 +3,7 @@ import os
 import local_k_calculation
 import k_function_helper
 import random_odcm_permutations_svc
-import global_k_function_svc
+import local_k_function_svc
 
 from arcpy import env
 
@@ -11,12 +11,12 @@ from arcpy import env
 local_k_calculation          = reload(local_k_calculation)
 k_function_helper            = reload(k_function_helper)
 random_odcm_permutations_svc = reload(random_odcm_permutations_svc)
-global_k_function_svc        = reload(global_k_function_svc)
+local_k_function_svc        = reload(local_k_function_svc)
 
-from local_k_calculation        import LocalKCalculation
+from local_k_calculation          import LocalKCalculation
 from k_function_helper            import KFunctionHelper
 from random_odcm_permutations_svc import RandomODCMPermutationsSvc
-from global_k_function_svc        import GlobalKFunctionSvc
+from local_k_function_svc        import LocalKFunctionSvc
 
 class LocalKFunction(object):
   ###
@@ -101,25 +101,25 @@ class LocalKFunction(object):
       datatype="GPString",
       parameterType="Required",
       direction="Output")
-    outRawODCMFCName.value = "Global_K_Raw_ODCM_Data"
+    outRawODCMFCName.value = "Local_K_Raw_ODCM_Data"
 
     # The raw data feature class (e.g. observed and random point computations).
     outRawFCName = arcpy.Parameter(
-      displayName="Raw Global-K Data Table (Raw Analysis Data)",
+      displayName="Raw Local-K Data Table (Raw Analysis Data)",
       name = "output_raw_analysis_feature_class",
       datatype="GPString",
       parameterType="Required",
       direction="Output")
-    outRawFCName.value = "Global_K_Raw_Analysis_Data"
+    outRawFCName.value = "Local_K_Raw_Analysis_Data"
 
     # The analysis feature class.
     outAnlFCName = arcpy.Parameter(
-      displayName="Global-K Summary Data (Plottable Data)",
+      displayName="Local-K Summary Data (Plottable Data)",
       name = "output_analysis_feature_class",
       datatype="GPString",
       parameterType="Required",
       direction="Output")
-    outAnlFCName.value = "Global_K_Summary_Data"
+    outAnlFCName.value = "Local_K_Summary_Data"
 
     # Confidence envelope (number of permutations).
     numPerms = arcpy.Parameter(
@@ -213,7 +213,7 @@ class LocalKFunction(object):
     outCoordSys        = parameters[11].value
     numPointsFieldName = parameters[12].value
     ndDesc             = arcpy.Describe(networkDataset)
-    gkfSvc             = GlobalKFunctionSvc()
+    lkfSvc             = LocalKFunctionSvc()
 
     # Refer to the note in the NetworkDatasetLength tool.
     if outCoordSys is None:
@@ -227,8 +227,8 @@ class LocalKFunction(object):
     messages.addMessage("Snap distance: {0}".format(snapDist))
     messages.addMessage("Output location (database path): {0}".format(outNetKLoc))
     messages.addMessage("Raw ODCM data table: {0}".format(outRawODCMFCName))
-    messages.addMessage("Raw global-K data table (raw analysis data): {0}".format(outRawFCName))
-    messages.addMessage("Global-K summary data (plottable data): {0}".format(outAnlFCName))
+    messages.addMessage("Raw local-K data table (raw analysis data): {0}".format(outRawFCName))
+    messages.addMessage("Local-K summary data (plottable data): {0}".format(outAnlFCName))
     messages.addMessage("Number of random permutations: {0}".format(numPerms))
     messages.addMessage("Network dataset length projected coordinate system: {0}".format(outCoordSys.name))
     messages.addMessage("Number of Points Field Name: {0}\n".format(numPointsFieldName))
@@ -245,7 +245,7 @@ class LocalKFunction(object):
     numPoints = self.kfHelper.countNumberOfFeatures(os.path.join(outNetKLoc, points))
 
     # Set up a cutoff lenght for the ODCM data if possible.  (Optimization.)
-    cutoff = gkfSvc.getCutoff(numBands, distInc, begDist)
+    cutoff = lkfSvc.getCutoff(numBands, distInc, begDist)
 
     # The results of all the calculations end up here.
     netKCalculations = []
@@ -257,7 +257,7 @@ class LocalKFunction(object):
     # Callback function that does the Local K calculation on an OD cost matrix.    
     def doNetKCalc(odDists, iteration):
       # Do the actual local k-function calculation.
-      netKCalc = LocalKCalculation(networkLength, numPoints, odDists, begDist, distInc, numBandsCont[0], numOrigins)
+      netKCalc = LocalKCalculation(networkLength, numPoints, odDists, begDist, distInc, numBandsCont[0], numOrigins, messages)
       netKCalculations.append(netKCalc.getDistanceBands())
 
       # If the user did not specifiy a number of distance bands explicitly,
@@ -274,8 +274,8 @@ class LocalKFunction(object):
 
     # Store the raw analysis data.
     messages.addMessage("Writing raw analysis data.")
-    gkfSvc.writeRawAnalysisData(outNetKLoc, outRawFCName, netKCalculations)
+    lkfSvc.writeRawAnalysisData(outNetKLoc, outRawFCName, netKCalculations, begDist, distInc, numBandsCont[0])
 
     # Analyze the data and store the results.
     messages.addMessage("Analyzing data.")
-    gkfSvc.writeAnalysisSummaryData(numPerms, netKCalculations, outNetKLoc, outAnlFCName)
+    # lkfSvc.writeAnalysisSummaryData(numPerms, netKCalculations, outNetKLoc, outAnlFCName)
