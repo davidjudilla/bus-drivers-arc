@@ -46,6 +46,9 @@ class LocalKCalculation(NetworkKCalculation):
     numOrigins= self._numOrigins
     
     # Split odDists by OriginID, where each OriginID has its own array of dictionaries
+    if (len(odDists) < 1):
+      return allOriginDistBands
+      
     keys = odDists[0].keys()
     odDistsTuples = np.array([tuple(row.values()) for row in odDists])
     originIdIndex = keys.index("OriginID")
@@ -81,5 +84,5 @@ class LocalKCalculation(NetworkKCalculation):
         distBands[bandNum] = currDistBandCnt
 
       allOriginDistBands.append(originDistBands)
-    self.messages.addMessage(allOriginDistBands)
+    # self.messages.addMessage(allOriginDistBands)
     return allOriginDistBands
