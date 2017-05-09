@@ -319,7 +319,7 @@ class VariableDistanceKFunction(object):
     # Generate the ODCM permutations, including the ODCM for the observed data.
     # doNetKCalc is called on each iteration.
     varRandODCMPermSvc = VariableRandomODCMPermutationsSvc()
-    varRandODCMPermSvc.generateODCMPermutations("Cross Analysis",
+    varRandODCMPermSvc.generateODCMPermutations("CROSS",
       srcPoints, destPoints, networkDataset, snapDist, cutoff, outNetKLoc,
       outRawODCMFCName, numPerms, outCoordSys, numPointsFieldName, lengthFieldName, messages, doNetKCalc)
 

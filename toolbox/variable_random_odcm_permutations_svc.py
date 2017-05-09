@@ -73,9 +73,9 @@ class VariableRandomODCMPermutationsSvc:
       # See the note above: Either find the distance from the source points to the random points,
       # or the distance between the random points.
       if analysisType == "CROSS":
-        odDists = self._calculateDistances(networkDataset, srcPoints, randPoints, snapDist, cutoff, lengthFieldName)
+        odDists = self._calculateDistances(networkDataset, srcPoints, randPoints, snapDist, cutoff, lengthFieldName, messages)
       else:
-        odDists = self._calculateDistances(networkDataset, randPoints, randPoints, snapDist, cutoff, lengthFieldName)
+        odDists = self._calculateDistances(networkDataset, randPoints, randPoints, snapDist, cutoff, lengthFieldName, messages)
       self._writeODCMData(odDists, outLoc, outFC, i)
       callback(odDists, i)
 
@@ -151,7 +151,6 @@ class VariableRandomODCMPermutationsSvc:
       for row in cursor:
         odDists.append({"Total_Length": row[0], "OriginID": row[1], "DestinationID": row[2], "Curve_Length": srcRows[row[1]-1], "Ratio": row[0]/srcRows[row[1]-1]})
 
-    messages.addMessage(odDists)
     return odDists
   
   ###
